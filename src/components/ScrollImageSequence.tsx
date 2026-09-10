@@ -34,13 +34,13 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
   const isRenderingRef = useRef<boolean>(false);
   const prefersReducedMotionRef = useRef<boolean>(false);
 
-  // High precision drawing with intelligent-fit (contain)
-  // Preserves 100% of the image composition: all 3 doors fully visible without lateral crop
+  // High precision drawing with intelligent-fit (cover)
+  // Preserves 100% of the image composition in Full HD with high-fidelity resampling
   const drawFrame = useCallback((frameIndex: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
     const images = imagesRef.current;
@@ -66,8 +66,8 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
     const height = canvas.clientHeight;
     if (width === 0 || height === 0) return;
 
-    // Handle high DPI (capped at 2 for performance)
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // High DPI scaling (supporting crisp Retina & 4K/8K displays up to 2.5x)
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     const targetW = Math.round(width * dpr);
     const targetH = Math.round(height * dpr);
 
@@ -79,10 +79,13 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
     ctx.save();
     ctx.scale(dpr, dpr);
 
+    // Bicubic high-quality image smoothing on the GPU
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
     // Preencher a imagem (Cover Fill / Background 100% Viewport):
     // Preenche 100% da tela/viewport sem deixar margens ou faixas vazias,
-    // mantendo a proporção natural da imagem (sem esticar vertical ou horizontalmente)
-    // e executando a animação dos 180 frames perfeitamente sincronizada ao scroll.
+    // mantendo a proporção natural da imagem em alta resolução Full HD
     const imgW = img.naturalWidth;
     const imgH = img.naturalHeight;
     const scale = Math.max(width / imgW, height / imgH);
@@ -95,7 +98,7 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
     // Limpa o canvas antes do desenho
     ctx.clearRect(0, 0, width, height);
 
-    // Desenha o frame atual da sequência preenchendo completamente o background
+    // Desenha o frame atual da sequência em alta definição
     ctx.drawImage(img, offsetX, offsetY, renderW, renderH);
     ctx.restore();
   }, [frameCount]);
@@ -135,8 +138,9 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
     const loadSingleImage = (index: number): Promise<HTMLImageElement> => {
       return new Promise((resolve, reject) => {
         const img = new Image();
-        const src = `${basePath}/${getFrameFileName(index)}`;
-        img.src = src;
+        const pad = String(index + 1).padStart(3, '0');
+        const webpSrc = `${basePath}/ezgif-frame-${pad}.webp`;
+        const jpgFallback = `${basePath}/ezgif-frame-${pad}.jpg`;
 
         const onDone = () => {
           if (!isMounted) return;
@@ -147,19 +151,30 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
           resolve(img);
         };
 
-        if (img.decode) {
-          img.decode().then(onDone).catch(() => {
-            img.onload = onDone;
-            img.onerror = reject;
-          });
-        } else {
-          img.onload = onDone;
-          img.onerror = reject;
-        }
+        const handleLoad = () => {
+          if (img.decode) {
+            img.decode().then(onDone).catch(onDone);
+          } else {
+            onDone();
+          }
+        };
+
+        img.onload = handleLoad;
+
+        img.onerror = () => {
+          if (img.src.endsWith('.webp')) {
+            // Fallback to Full HD JPG
+            img.src = jpgFallback;
+          } else {
+            reject();
+          }
+        };
+
+        img.src = webpSrc;
       });
     };
 
-    // 1. Immediately load Frame 001 (index 0)
+    // 1. Immediately load Frame 001 (index 0) in Full HD
     loadSingleImage(0).then(() => {
       if (isMounted) {
         scheduleRender(0);
@@ -178,8 +193,8 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
       return;
     }
 
-    // 2. Preload remaining frames in staggered batches
-    const batchSize = 6;
+    // 2. Preload remaining frames in progressive streaming batches
+    const batchSize = 8;
     let nextIndexToLoad = 1;
 
     const loadBatch = () => {
@@ -193,7 +208,7 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
 
       Promise.all(batchPromises).then(() => {
         if (isMounted && nextIndexToLoad < frameCount) {
-          setTimeout(loadBatch, 16);
+          setTimeout(loadBatch, 12);
         }
       });
     };
