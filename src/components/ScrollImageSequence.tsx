@@ -12,7 +12,7 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
   basePath = '/image-sequence',
   getFrameFileName = (index) => {
     const pad = String(index + 1).padStart(3, '0');
-    return `ezgif-frame-${pad}.webp`;
+    return `ezgif-frame-${pad}.jpg`;
   },
   children,
 }) => {
@@ -68,37 +68,39 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
     const img = getNearestLoadedFrame(frameIndex);
     if (!img) return;
 
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    if (width === 0 || height === 0) return;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    if (viewportWidth === 0 || viewportHeight === 0) return;
 
-    // High DPI scaling (capped at 2 for optimal mobile/desktop balance)
+    // High DPI scaling (matching device pixel ratio, capped at 2 for optimal mobile/desktop balance)
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const targetW = Math.round(width * dpr);
-    const targetH = Math.round(height * dpr);
+    const targetW = Math.round(viewportWidth * dpr);
+    const targetH = Math.round(viewportHeight * dpr);
 
+    // Sync physical buffer and CSS style dimensions
     if (canvas.width !== targetW || canvas.height !== targetH) {
       canvas.width = targetW;
       canvas.height = targetH;
+      canvas.style.width = `${viewportWidth}px`;
+      canvas.style.height = `${viewportHeight}px`;
     }
 
-    ctx.save();
-    ctx.scale(dpr, dpr);
-
+    // Configure context for maximum clarity with bicubic interpolation
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    // Cover math: preserve aspect ratio, completely cover viewport
+    // Original image dimensions
     const imgW = img.naturalWidth || 1248;
     const imgH = img.naturalHeight || 704;
-    const scale = Math.max(width / imgW, height / imgH);
-    const renderW = imgW * scale;
-    const renderH = imgH * scale;
-    const offsetX = (width - renderW) / 2;
-    const offsetY = (height - renderH) / 2;
+
+    // Cover math: preserve exact aspect ratio without distortion, stretching or compression
+    const scale = Math.max(targetW / imgW, targetH / imgH);
+    const renderW = Math.round(imgW * scale);
+    const renderH = Math.round(imgH * scale);
+    const offsetX = Math.round((targetW - renderW) / 2);
+    const offsetY = Math.round((targetH - renderH) / 2);
 
     ctx.drawImage(img, offsetX, offsetY, renderW, renderH);
-    ctx.restore();
     currentFrameRef.current = frameIndex;
   }, [getNearestLoadedFrame]);
 
@@ -117,7 +119,7 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
     });
   }, [drawFrame]);
 
-  // Preload all 151 images with priority to initial frames and progressive streaming
+  // Preload all 151 images directly from original JPG files with asynchronous decode
   useEffect(() => {
     let isMounted = true;
 
@@ -129,19 +131,22 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
         }
 
         const img = new Image();
-        const pad = String(index + 1).padStart(3, '0');
-        const webpSrc = `${basePath}/ezgif-frame-${pad}.webp`;
-        const jpgFallback = `${basePath}/ezgif-frame-${pad}.jpg`;
+        const fileName = getFrameFileName(index);
+        const src = `${basePath}/${fileName}`;
 
         const onDone = () => {
           if (!isMounted) return;
           imagesRef.current[index] = img;
           loadedIndicesRef.current.add(index);
+          // If the sequence is waiting for this exact frame, redraw immediately
+          if (currentFrameRef.current === index) {
+            scheduleRender(index);
+          }
           resolve(img);
         };
 
         img.onload = () => {
-          if (img.decode) {
+          if ('decode' in img && typeof img.decode === 'function') {
             img.decode().then(onDone).catch(onDone);
           } else {
             onDone();
@@ -149,15 +154,11 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
         };
 
         img.onerror = () => {
-          // If webp fails, fallback to local JPG
-          if (img.src.endsWith('.webp')) {
-            img.src = jpgFallback;
-          } else {
-            reject();
-          }
+          console.error(`[ScrollImageSequence] Erro ao carregar frame original: ${src}`);
+          reject(new Error(`Failed to load ${src}`));
         };
 
-        img.src = webpSrc;
+        img.src = src;
       });
     };
 
@@ -170,7 +171,7 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
     });
 
     // 2. Preload remaining frames in progressive streaming batches
-    const batchSize = 10;
+    const batchSize = 12;
     let nextIndexToLoad = 1;
 
     const loadBatch = () => {
@@ -198,7 +199,7 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
       isMounted = false;
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
     };
-  }, [basePath, frameCount, scheduleRender]);
+  }, [basePath, frameCount, getFrameFileName, scheduleRender]);
 
   // Scroll listener tracking scroll position, calculating frame and handling freeze + fade
   useEffect(() => {
@@ -276,15 +277,20 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
       });
     };
 
+    const handleResize = () => {
+      handleScroll();
+      scheduleRender(currentFrameRef.current);
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
 
     // Initial check
     handleScroll();
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('resize', handleResize);
       if (scrollRafId) cancelAnimationFrame(scrollRafId);
     };
   }, [frameCount, scheduleRender]);
@@ -315,7 +321,7 @@ export const ScrollImageSequence: React.FC<ScrollImageSequenceProps> = ({
         <canvas
           id="scroll-sequence-canvas"
           ref={canvasRef}
-          className="absolute inset-0 w-full h-full block object-cover select-none"
+          className="absolute inset-0 block select-none"
           style={{
             opacity: isLoadedFirstFrame ? canvasOpacity : 0,
             pointerEvents: canvasOpacity <= 0.02 ? 'none' : 'auto',
