@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, MapPin } from 'lucide-react';
+import facadePhoto from '../assets/forte-vidros-fachada.jpg';
 
 /**
  * Fotografia real da fachada da Forte Vidros em Matupá - MT.
+ * Suporta importação direta de asset pelo Vite e fallbacks públicos.
  */
-export const HERO_FACADE_IMAGE = '/assets/aistudio/forte-vidros-fachada.jpg';
+export const HERO_FACADE_IMAGE = facadePhoto || '/images/forte-vidros-fachada.jpg';
 
 export const Hero: React.FC = () => {
+  const [imgSrc, setImgSrc] = useState<string>(HERO_FACADE_IMAGE);
+
   return (
     <section
       id="hero-section"
@@ -61,7 +65,14 @@ export const Hero: React.FC = () => {
               >
                 <img
                   id="facade-photo-img"
-                  src={HERO_FACADE_IMAGE}
+                  src={imgSrc}
+                  onError={() => {
+                    if (imgSrc !== '/images/forte-vidros-fachada.jpg') {
+                      setImgSrc('/images/forte-vidros-fachada.jpg');
+                    } else if (imgSrc !== '/assets/aistudio/forte-vidros-fachada.jpg') {
+                      setImgSrc('/assets/aistudio/forte-vidros-fachada.jpg');
+                    }
+                  }}
                   alt="Fachada da Forte Vidros em Matupá — MT"
                   className="w-full h-full object-cover select-none transition-transform duration-500 group-hover:scale-105"
                   loading="eager"

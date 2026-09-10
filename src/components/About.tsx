@@ -1,16 +1,21 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
+import loopVideo from '../assets/forte-vidros-loop.mp4';
 
 export const About: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.defaultMuted = true;
-      videoRef.current.muted = true;
-      videoRef.current.play().catch(() => {
-        // Políticas de autoplay do navegador
-      });
+    const video = videoRef.current;
+    if (video) {
+      video.defaultMuted = true;
+      video.muted = true;
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Políticas de autoplay do navegador
+        });
+      }
     }
   }, []);
   return (
@@ -94,7 +99,6 @@ export const About: React.FC = () => {
                   <video
                     ref={videoRef}
                     id="about-loop-video"
-                    src="/assets/aistudio/forte-vidros-loop.mp4"
                     autoPlay
                     loop
                     muted
@@ -103,7 +107,12 @@ export const About: React.FC = () => {
                     preload="auto"
                     className="w-full h-full object-cover select-none"
                     aria-label="Vídeo em looping contínuo da Forte Vidros"
-                  />
+                  >
+                    <source src={loopVideo} type="video/mp4" />
+                    <source src="/videos/forte-vidros-loop.mp4" type="video/mp4" />
+                    <source src="/assets/aistudio/forte-vidros-loop.mp4" type="video/mp4" />
+                    Seu navegador não suporta a reprodução de vídeo.
+                  </video>
                 </div>
 
                 {/* Rótulo técnico discreto */}
