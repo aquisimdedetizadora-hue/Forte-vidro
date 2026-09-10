@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollImageSequence } from './components/ScrollImageSequence';
 import { Header } from './components/Header';
 import { About } from './components/About';
+import { Reviews } from './components/Reviews';
 import { Contact } from './components/Contact';
 
 export default function App() {
@@ -23,7 +24,10 @@ export default function App() {
       {/* SEGUNDA SEÇÃO: APRESENTAÇÃO DA FORTE VIDROS */}
       <About />
 
-      {/* TERCEIRA E ÚLTIMA SEÇÃO: CONTATO + LOCALIZAÇÃO + RODAPÉ */}
+      {/* PROVA SOCIAL: AVALIAÇÕES REAIS NO GOOGLE MAPS */}
+      <Reviews />
+
+      {/* SEÇÃO FINAL: CONTATO + LOCALIZAÇÃO + RODAPÉ */}
       <Contact />
     </main>
   );
