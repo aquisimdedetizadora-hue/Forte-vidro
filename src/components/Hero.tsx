@@ -2,11 +2,9 @@ import React from 'react';
 import { ArrowRight, MapPin } from 'lucide-react';
 
 /**
- * Constante para a fotografia real da fachada da Forte Vidros.
- * Inicialmente: null (renderiza placeholder arquitetônico refinado e discreto)
- * Posteriormente: '/images/forte-vidros-fachada.jpg' (ou caminho relativo correspondente)
+ * Fotografia real da fachada da Forte Vidros em Matupá - MT.
  */
-export const HERO_FACADE_IMAGE: string | null = null;
+export const HERO_FACADE_IMAGE = '/assets/aistudio/forte-vidros-fachada.jpg';
 
 export const Hero: React.FC = () => {
   return (
@@ -56,30 +54,20 @@ export const Hero: React.FC = () => {
 
           {/* Coluna Direita: Área da Fotografia da Fachada */}
           <div className="lg:col-span-5 w-full">
-            <div className="w-full aspect-[4/3] rounded-xl overflow-hidden border border-[#D2D2D7] bg-[#F5F5F7] relative flex items-center justify-center transition-all duration-300">
-              {HERO_FACADE_IMAGE ? (
+            <div className="w-full aspect-[4/3] rounded-xl overflow-hidden border border-[#D2D2D7] bg-[#F5F5F7] relative flex items-center justify-center transition-all duration-300 shadow-sm group">
+              <div
+                id="facade-photo-placeholder"
+                className="w-full h-full relative overflow-hidden"
+              >
                 <img
+                  id="facade-photo-img"
                   src={HERO_FACADE_IMAGE}
-                  alt="Fachada da Forte Vidros"
-                  className="w-full h-full object-cover select-none"
-                  loading="lazy"
+                  alt="Fachada da Forte Vidros em Matupá — MT"
+                  className="w-full h-full object-cover select-none transition-transform duration-500 group-hover:scale-105"
+                  loading="eager"
+                  referrerPolicy="no-referrer"
                 />
-              ) : (
-                /* Placeholder discreto e elegante conforme especificado */
-                <div
-                  id="facade-photo-placeholder"
-                  className="w-full h-full flex flex-col items-center justify-center p-6 text-center select-none"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <span className="text-xs sm:text-sm font-semibold tracking-[0.25em] text-[#86868B] uppercase">
-                      FOTO DA FACHADA
-                    </span>
-                    <span className="text-[11px] sm:text-xs font-medium tracking-[0.2em] text-[#86868B]/70 uppercase">
-                      EM BREVE
-                    </span>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

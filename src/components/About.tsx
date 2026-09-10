@@ -1,7 +1,18 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 
 export const About: React.FC = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.defaultMuted = true;
+      videoRef.current.muted = true;
+      videoRef.current.play().catch(() => {
+        // Políticas de autoplay do navegador
+      });
+    }
+  }, []);
   return (
     <motion.section
       id="about-section"
@@ -72,62 +83,33 @@ export const About: React.FC = () => {
               </div>
             </div>
 
-            {/* ELEMENTO ARQUITETÔNICO DISCRETO (Diagrama Técnico Linear Minimalista) */}
+            {/* ELEMENTO EM VÍDEO (Looping Infinito - Execução & Processo) */}
             <div
               id="architectural-schematic-element"
               className="mt-12 pt-8 border-t border-[#D2D2D7]/60"
             >
-              <div className="w-full bg-[#F5F5F7] rounded-xl border border-[#D2D2D7] p-5 sm:p-6 flex flex-col gap-4">
-                
-                {/* SVG Técnico Linear representando esquadria de alumínio e folha de vidro com cotas */}
-                <svg
-                  viewBox="0 0 360 140"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-full h-auto text-[#000000]"
-                >
-                  {/* Linhas de grade técnica de fundo (Grid milimétrico) */}
-                  <line x1="20" y1="20" x2="340" y2="20" stroke="#D2D2D7" strokeWidth="0.75" strokeDasharray="3 3" />
-                  <line x1="20" y1="120" x2="340" y2="120" stroke="#D2D2D7" strokeWidth="0.75" strokeDasharray="3 3" />
-                  <line x1="20" y1="20" x2="20" y2="120" stroke="#D2D2D7" strokeWidth="0.75" strokeDasharray="3 3" />
-                  <line x1="340" y1="20" x2="340" y2="120" stroke="#D2D2D7" strokeWidth="0.75" strokeDasharray="3 3" />
-
-                  {/* Marco estrutural externo (Perfil de Alumínio) */}
-                  <rect x="35" y="25" width="290" height="90" rx="1" stroke="#000000" strokeWidth="1.25" />
-                  
-                  {/* Perfil interno de vedação e folha móvel */}
-                  <rect x="42" y="32" width="276" height="76" stroke="#86868B" strokeWidth="0.75" />
-
-                  {/* Painel de Vidro Temperado com reflexo sutil de 45 graus */}
-                  <rect x="48" y="38" width="264" height="64" fill="#FFFFFF" stroke="#D2D2D7" strokeWidth="0.5" />
-                  <line x1="160" y1="42" x2="190" y2="98" stroke="#D2D2D7" strokeWidth="1" strokeDasharray="4 4" />
-                  <line x1="175" y1="42" x2="205" y2="98" stroke="#D2D2D7" strokeWidth="1" strokeDasharray="4 4" />
-
-                  {/* Eixo do pivô / alinhamento vertical com acento azul de precisão (#1677FF) */}
-                  <line x1="110" y1="20" x2="110" y2="120" stroke="#1677FF" strokeWidth="1" strokeDasharray="2 2" />
-                  <circle cx="110" cy="25" r="2.5" fill="#1677FF" />
-                  <circle cx="110" cy="115" r="2.5" fill="#1677FF" />
-
-                  {/* Marcas de cota arquitetônica nas extremidades */}
-                  <line x1="30" y1="25" x2="35" y2="25" stroke="#86868B" strokeWidth="1" />
-                  <line x1="30" y1="115" x2="35" y2="115" stroke="#86868B" strokeWidth="1" />
-                  <line x1="32.5" y1="25" x2="32.5" y2="115" stroke="#86868B" strokeWidth="0.75" />
-
-                  <line x1="35" y1="125" x2="35" y2="120" stroke="#86868B" strokeWidth="1" />
-                  <line x1="325" y1="125" x2="325" y2="120" stroke="#86868B" strokeWidth="1" />
-                  <line x1="35" y1="122.5" x2="325" y2="122.5" stroke="#86868B" strokeWidth="0.75" />
-
-                  {/* Marcação de cruz de precisão (+) nos cantos técnicos */}
-                  <path d="M18 18 H22 M20 16 V20" stroke="#86868B" strokeWidth="0.75" />
-                  <path d="M338 18 H342 M340 16 V20" stroke="#86868B" strokeWidth="0.75" />
-                  <path d="M18 122 H22 M20 120 V124" stroke="#86868B" strokeWidth="0.75" />
-                  <path d="M338 122 H342 M340 120 V124" stroke="#86868B" strokeWidth="0.75" />
-                </svg>
+              <div className="w-full bg-[#F5F5F7] rounded-xl border border-[#D2D2D7] p-3 sm:p-4 flex flex-col gap-3 shadow-sm group">
+                {/* Vídeo em looping infinito */}
+                <div className="w-full aspect-[16/9] rounded-lg overflow-hidden bg-black relative">
+                  <video
+                    ref={videoRef}
+                    id="about-loop-video"
+                    src="/assets/aistudio/forte-vidros-loop.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls={false}
+                    preload="auto"
+                    className="w-full h-full object-cover select-none"
+                    aria-label="Vídeo em looping contínuo da Forte Vidros"
+                  />
+                </div>
 
                 {/* Rótulo técnico discreto */}
-                <div className="flex items-center justify-between text-[11px] font-medium tracking-[0.18em] text-[#86868B] uppercase">
-                  <span>ESTRUTURA & ESQUADRIA</span>
-                  <span>DETALHE TÉCNICO // PRECISÃO</span>
+                <div className="flex items-center justify-between px-1 text-[11px] font-medium tracking-[0.18em] text-[#86868B] uppercase">
+                  <span>EXECUÇÃO & PRECISÃO</span>
+                  <span>FORTE VIDROS EM AÇÃO</span>
                 </div>
               </div>
             </div>
