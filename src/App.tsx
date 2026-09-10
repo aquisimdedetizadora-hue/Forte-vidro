@@ -1,6 +1,6 @@
 import React from 'react';
-import { ScrollImageSequence } from './components/ScrollImageSequence';
 import { Header } from './components/Header';
+import { Hero } from './components/Hero';
 import { About } from './components/About';
 import { Reviews } from './components/Reviews';
 import { Contact } from './components/Contact';
@@ -8,18 +8,11 @@ import { Contact } from './components/Contact';
 export default function App() {
   return (
     <main id="app-root" className="min-h-screen bg-white text-[#000000] selection:bg-[#000000] selection:text-white">
-      {/* Header minimalista que surge na transição da Hero */}
+      {/* Header com navegação e botão WhatsApp */}
       <Header />
 
-      {/* Experiência Cinematográfica de 180 frames + Transição Seamless para a Hero da Forte Vidros */}
-      <ScrollImageSequence
-        frameCount={180}
-        basePath="/image-sequence"
-        getFrameFileName={(index) => {
-          const pad = String(index + 1).padStart(3, '0');
-          return `ezgif-frame-${pad}.jpg`;
-        }}
-      />
+      {/* SEÇÃO PRINCIPAL (HERO) */}
+      <Hero />
 
       {/* SEGUNDA SEÇÃO: APRESENTAÇÃO DA FORTE VIDROS */}
       <About />

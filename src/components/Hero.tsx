@@ -14,7 +14,7 @@ export const Hero: React.FC = () => {
   return (
     <section
       id="hero-section"
-      className="relative w-full min-h-screen bg-white text-[#000000] flex items-center select-auto"
+      className="relative w-full min-h-screen bg-white text-[#000000] flex items-center select-auto pt-20"
     >
       <div className="w-full max-w-[1440px] mx-auto px-[5vw] py-16 sm:py-24 lg:py-28">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-20 items-center">

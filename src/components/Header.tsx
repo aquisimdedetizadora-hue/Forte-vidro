@@ -2,18 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 
 export const Header: React.FC = () => {
-  const [isScrolledPastIntro, setIsScrolledPastIntro] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      // Show header once user enters the Hero transition phase of the sequence
-      const introSection = document.getElementById('intro-sequence-section');
-      if (introSection) {
-        const rect = introSection.getBoundingClientRect();
-        const scrollableDist = introSection.clientHeight - window.innerHeight;
-        const progress = scrollableDist > 0 ? -rect.top / scrollableDist : 1;
-        setIsScrolledPastIntro(progress >= 0.82);
-      }
+      setIsScrolled(window.scrollY > 20);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -31,10 +24,10 @@ export const Header: React.FC = () => {
   return (
     <header
       id="main-header"
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolledPastIntro
-          ? 'opacity-100 translate-y-0 pointer-events-auto bg-white/90 backdrop-blur-md border-b border-zinc-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)]'
-          : 'opacity-0 -translate-y-4 pointer-events-none'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? 'bg-white/95 backdrop-blur-md border-b border-zinc-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)]'
+          : 'bg-white/80 backdrop-blur-sm border-b border-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
