@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollImageSequence } from './components/ScrollImageSequence';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { About } from './components/About';
@@ -11,8 +12,13 @@ export default function App() {
       {/* Header com navegação e botão WhatsApp */}
       <Header />
 
-      {/* SEÇÃO PRINCIPAL (HERO) */}
-      <Hero />
+      {/* ANIMAÇÃO DE SCROLL DOS 151 FRAMES (1 A 151) COM TRANSIÇÃO EM FADE PARA A HERO */}
+      <ScrollImageSequence
+        frameCount={151}
+        basePath="/image-sequence"
+      >
+        <Hero />
+      </ScrollImageSequence>
 
       {/* SEGUNDA SEÇÃO: APRESENTAÇÃO DA FORTE VIDROS */}
       <About />

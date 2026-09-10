@@ -6,7 +6,15 @@ export const Header: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const introSection = document.getElementById('intro-sequence-section');
+      if (introSection) {
+        const rect = introSection.getBoundingClientRect();
+        const scrollableDist = introSection.clientHeight - window.innerHeight;
+        const progress = scrollableDist > 0 ? -rect.top / scrollableDist : 1;
+        setIsScrolled(progress >= 0.82);
+      } else {
+        setIsScrolled(window.scrollY > 20);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -15,6 +23,14 @@ export const Header: React.FC = () => {
   }, []);
 
   const scrollToSection = (id: string) => {
+    if (id === 'hero-section') {
+      const intro = document.getElementById('intro-sequence-section');
+      if (intro) {
+        const scrollableDist = intro.clientHeight - window.innerHeight;
+        window.scrollTo({ top: scrollableDist, behavior: 'smooth' });
+        return;
+      }
+    }
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
@@ -24,10 +40,10 @@ export const Header: React.FC = () => {
   return (
     <header
       id="main-header"
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled
-          ? 'bg-white/95 backdrop-blur-md border-b border-zinc-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)]'
-          : 'bg-white/80 backdrop-blur-sm border-b border-transparent'
+          ? 'opacity-100 translate-y-0 pointer-events-auto bg-white/95 backdrop-blur-md border-b border-zinc-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)]'
+          : 'opacity-0 -translate-y-4 pointer-events-none'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
